@@ -271,3 +271,6 @@ e58460cd6514   n8nio/n8n                 "tini -- /docker-ent…"   2 days ago  
 ### Arquitetura do fluxo criado para a terceira etapa do desafio:
   ![Arquitetura do fluxo etapa 3](images/Arquitetura-do-fluxo-etapa-3.png)
 
+
+## Desafios encontrados
+Um dos maiores desafios que enfrentei neste projeto foi o primeiro contato com o n8n e a OpenAI. Nunca tinha trabalhado com automação de fluxo de dados ou com inteligência artificial, então tudo era novo e, muitas vezes, parecia um grande quebra-cabeça. A princípio, entender como o n8n conectava as planilhas do Google Sheets à minha API e depois ao banco de dados parecia bem complicado. A cada erro de JSON inválido ou de variáveis que não eram reconhecidas, a sensação de estar começando do zero voltava. No entanto, a cada problema resolvido, a cada nó que funcionava como o esperado, o processo se tornava incrivelmente gratificante. No final, percebi que por mais desafiador que tenha sido, o conhecimento que adquiri sobre ETL e integração de sistemas foi enorme. Foi uma jornada de aprendizado que me mostrou o poder da automação para simplificar tarefas complexas e que, com certeza, levarei para meus próximos projetos.
