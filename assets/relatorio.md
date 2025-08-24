@@ -71,3 +71,77 @@ e58460cd6514   n8nio/n8n                 "tini -- /docker-ent…"   2 days ago  
 
 - **PostgreSQL**: O banco de dados está na porta `5432`. Ele só é acessível pelos outros containers. Para interagir com ele, você pode usar uma ferramenta de banco de dados ou entrar no container com `docker exec -it postgres_container psql -U admingle -d meubanco`.
 
+## Etapa 1: Estrutura do Projeto - Infraestrutura Base (Docker, Python, Postgres)
+
+- **1° Passo**:  Criei o `arquivo docker-compose.yml`, responsável para iniciar a `API`, `banco de dados` e o `n8n`. A primeira instrução foi o banco de dados, contendo uma arquitetura simples apenas para suportar os dados disponibilizados.
+
+  #### Estrutura do banco e tabela:
+  Criei um banco de dados relacional no PostgreSQL para centralizar os dados de eventos que antes estavam dispersos em planilhas, para isso, utilizei o comando: `docker-compose exec postgres_container psql -U admingle -d meubanco`. 
+  
+  Dentro dele, criei a tabela `eventos`, que armazena informações de cada evento de forma organizada e padronizada. Usei uma tabela única, porque todos os dados possuem o mesmo contexto (eventos).
+
+  ```powershell
+  meubanco=# \d eventos
+                                Table "public.eventos"
+    Column    |  Type   | Collation | Nullable |               Default
+  -------------+---------+-----------+----------+-------------------------------------
+  id          | integer |           | not null | nextval('eventos_id_seq'::regclass) 
+  nome_evento | text    |           | not null | 
+  data_anual  | text    |           |          | 
+  descricao   | text    |           |          | 
+  alcance     | integer |           |          | 0
+  engajamento | integer |           |          | 0
+  status      | text    |           |          | 
+  fonte       | text    |           |          | 
+  Indexes:
+      "eventos_pkey" PRIMARY KEY, btree (id)
+  meubanco=# 
+  ```
+  A tabela foi criada de forma flexível para garantir que todos os dados vindos das planilhas integradas pelo n8n sejam inseridos no banco sem falhas, priorizando a demonstração do fluxo automatizado em vez da validação rígida dos dados.
+
+- **2° Passo**: Criei o arquivo `main.py` que contém o código principal da API, construída com o framework `FastAPI`. 
+
+  Nele, foram definidos os seguintes pontos:
+  - Conexão com o banco de dados PostgreSQL, utilizando a biblioteca `psycopg2`.
+  - Definição do modelo de dados Evento com `Pydantic`, que garante validação dos campos recebidos.
+  - Implementação dos `endpoints` principais:
+      - GET / — rota de teste
+    - POST /eventos/ — cria evento
+    - GET /eventos/ — lista eventos
+    - GET /eventos/{nome_evento} — consulta evento
+    - PUT /eventos/{nome_evento} — atualiza evento
+    - DELETE /eventos/{nome_evento} — apaga evento
+
+    Esse arquivo representa a camada de acesso aos dados, permitindo que a aplicação insira, consulte, atualize e remova registros no banco.
+
+- **3° Passo**: Criei o arquivo `requirements.txt` para conter a lista de dependências necessárias, garantindo que a API funcione corretamente. O Docker utiliza esse arquivo para instalar automaticamente todas as bibliotecas no ambiente do container.
+
+  Inclui as bibliotecas:
+    - `fastapi` → framework web utilizado.
+    - `uvicorn[standard]` → servidor ASGI para rodar a aplicação.
+    - ` psycopg2-binary` → driver para conectar ao banco PostgreSQL.
+
+- **4° Passo**: criei o arquivo `Dockerfile ` que define como a imagem da API deve ser construída. Esse arquivo garante que a API seja reproduzida em qualquer ambiente, de forma padronizada.
+
+  Principais etapas configuradas:
+  - Baseado na imagem oficial do Python 3.9 slim.
+  - Configuração do diretório de trabalho /app.
+  - Instalação das dependências a partir do requirements.txt.
+  - Cópia do código da API para dentro da imagem.
+  - Exposição da porta 8000, utilizada pelo FastAPI.
+  - Comando para iniciar a aplicação com Uvicorn.
+
+- **5° Passo**: Atualizei o arquivo `docker-compose.yml` para orquestrar os serviços. Nessa etapa, são iniciados dois containers, garantindo que o banco de dados e a API sejam executados de forma integrada, o que simplifica o gerenciamento:
+
+  - Postgres: 
+     - Banco de dados relacional para armazenar os eventos.
+     - Configurado com usuário, senha e nome do banco via variáveis de ambiente.
+     - Persistência dos dados através de volume mapeado.
+  - API (FastAPI):
+     - container construído a partir do Dockerfile.
+     - Conectado ao banco de dados via variáveis de ambiente.
+     - Porta 8000 exposta para acessar os endpoints da API.
+     - Dependente do serviço do banco (depends_on).
+    
+  Acessando pelo link `http://localhost:8000` deve aparecer `{"status": "API está funcionando!"}` e pelo `http://localhost:8000/docs` aparece a documentação automática do FastAPI.
+
