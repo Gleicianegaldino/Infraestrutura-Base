@@ -144,4 +144,5 @@ e58460cd6514   n8nio/n8n                 "tini -- /docker-ent…"   2 days ago  
      - Dependente do serviço do banco (depends_on).
     
   Acessando pelo link `http://localhost:8000` deve aparecer `{"status": "API está funcionando!"}` e pelo `http://localhost:8000/docs` aparece a documentação automática do FastAPI.
+    ![Arquitetura do fluxo etapa 3](images/documentação-automática-FastAPI.png)
 
