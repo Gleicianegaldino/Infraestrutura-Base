@@ -1,0 +1,563 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1478df39-7a8b-46e9-a031-da0a3a1d9e92",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KeEF47VXCXO-eZpxhFG8Ye3gNRG3qwUSjES2kZ-_Xeo",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Agenda IA",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        -192
+      ],
+      "id": "f543d1c2-7b2e-477a-a921-408b5805ea12",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3L1RlgUtGtW4TD5R",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UNROt8uGtCsr1TIsSJ8hC1ZVDQ_4_pXnVzg4mlLPasA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MKT",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        16
+      ],
+      "id": "acb932f8-80dd-4f8d-876b-842c436c3493",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3L1RlgUtGtW4TD5R",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1OjisMsyH_xSJPmFq43mbC-_IX-w02VjAiUkea6-ovcw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "RECURSOS HUMANOS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        224
+      ],
+      "id": "ecd5f987-3a76-472e-b194-f08b36fcff19",
+      "name": "Get row(s) in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3L1RlgUtGtW4TD5R",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api_container:8000/eventos/",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"nome_evento\": \"Conexão Facilit.IA\",\n  \"data_anual\": \"01/05/2025 à 31/07/2025\",\n  \"descricao\": \"Evento de networking para profissionais\",\n  \"alcance\": 0,\n  \"engajamento\": 890,\n  \"status\": \"Concluído\",\n  \"origem\": \"IA\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        16
+      ],
+      "id": "5d5a145c-31aa-40a0-a261-10168e3c19be",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  let evento = item.json;\n\n  function sanitize(key, value) {\n    if (value === null || value === undefined) return key === \"alcance\" || key === \"engajamento\" ? 0 : \"\";\n    if (typeof value === \"string\") {\n      return value.trim().replace(/\"/g, '\\\\\"').replace(/\\n/g, \" \");\n    }\n    return value;\n  }\n\n  let novoEvento = {};\n  for (let key in evento) {\n    novoEvento[key] = sanitize(key, evento[key]);\n  }\n\n  return { json: novoEvento };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "9f69f0d6-fa3d-4283-94c1-cd941739ebf9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46b51501-f734-4665-8a22-9618d16f1adf",
+              "name": "nome_evento",
+              "value": "={{ $json.Evento }}",
+              "type": "string"
+            },
+            {
+              "id": "523daa72-0b03-4d94-af4f-e26b82ed5e20",
+              "name": "data_anual",
+              "value": "={{ $json[\"Data/Anual\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "5f098321-fe20-45d8-ae02-fc4d0a7e6607",
+              "name": "descricao",
+              "value": "={{ $json.Descrição }}",
+              "type": "string"
+            },
+            {
+              "id": "76c365dd-d616-4480-b13b-864f1ab9b6ef",
+              "name": "engajamento",
+              "value": "={{ $json.Engajamento || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "032f35f1-2f6e-41c0-a942-8cabb43df66f",
+              "name": "=alcance",
+              "value": "={{ $json.ALCANCE || 0 }}",
+              "type": "string"
+            },
+            {
+              "id": "70026eba-9037-4cf8-907a-2af66bda4b05",
+              "name": "status",
+              "value": "={{ $json.STATUS }}",
+              "type": "string"
+            },
+            {
+              "id": "0e7dc66c-2787-4ae8-bec7-46a51d395e4d",
+              "name": "fonte",
+              "value": "={{ $json.fonte }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        16
+      ],
+      "id": "a129f1df-e512-4a35-8f56-231128b0aa4e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "148916fe-da3e-4a66-a2ab-0495ec749ea7",
+              "name": "fonte",
+              "value": "IA",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        -192
+      ],
+      "id": "6b8b5ee4-e938-43ca-b8e0-5c9a3b192627",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b01e9d9b-6b4e-46f9-9c0e-e3312d246fdd",
+              "name": "fonte",
+              "value": "MKT",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        16
+      ],
+      "id": "4b62698b-f5b7-4800-80f3-03abe73ffcae",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e55b151e-fa83-4f4b-b65b-1a4d3ac05ca4",
+              "name": "fonte",
+              "value": "RH",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        224
+      ],
+      "id": "d3a53e8c-169e-4b5f-8015-acf04b3bc40e",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        640,
+        0
+      ],
+      "id": "0619d285-34b2-43e0-9d0c-08b81adcad1e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "eventos",
+          "mode": "list",
+          "cachedResultName": "eventos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "alcance": "={{ $json.alcance ? Number($json.alcance) : 0 }}",
+            "engajamento": "={{ $json.engajamento ? Number($json.engajamento) : 0 }}",
+            "fonte": "={{ $json.fonte }}",
+            "data_anual": "={{ $json.data_anual }}",
+            "nome_evento": "={{ $json.nome_evento }}",
+            "descricao": "={{ $json.descricao }}",
+            "status": "={{ $json.status }}"
+          },
+          "matchingColumns": [
+            "nome_evento",
+            "data_anual"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome_evento",
+              "displayName": "nome_evento",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data_anual",
+              "displayName": "data_anual",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "descricao",
+              "displayName": "descricao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "alcance",
+              "displayName": "alcance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "engajamento",
+              "displayName": "engajamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "origem",
+              "displayName": "origem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fonte",
+              "displayName": "fonte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1200,
+        16
+      ],
+      "id": "86fc2196-3322-485d-9b05-3e541e56b364",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "5RlQtgt6N9HXmiJ5",
+          "name": "Postgres account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "660123b2-53ef-4ad9-af8c-c26ea5f85647",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fb1a7431924de21853473589f1ac3324ff7742a3ae0f5c3b0652170d7269e4ba"
+  },
+  "id": "x7lWQpm7xLs8kBz5",
+  "tags": []
+}
