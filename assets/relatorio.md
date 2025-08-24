@@ -197,3 +197,77 @@ e58460cd6514   n8nio/n8n                 "tini -- /docker-ent…"   2 days ago  
 ### Arquitetura do fluxo criado para a segunda etapa do desafio:
   ![Arquitetura do fluxo etapa 2](images/Arquitetura-do-fluxo-etapa-2.png)
 
+
+## Etapa 3: Workflow de Consulta com IA (O Cérebro do Projeto)
+
+- **1° Passo**: Acessei o site `https://webhook.site/` e automaticamente foi gerada uma URL exclusiva. Copiei essa URL e usei em um sistema que envia requisições HTTP. Assim que os dados foram enviados, visualizei tudo na tela. 
+
+  `https://webhook.site/#!/view/c09e4dff-7a8b-4aab-9f0f-74bc62ab58af/63c90750-2510-403e-aa20-bca45ecddee0/1`
+
+    ![Webhook](images/webhook1.png)
+
+- **2° Passo**: Criei um novo workflow no n8n  e comecei adicionando uma URL teste
+  `https://webhook.site/c09e4dff-7a8b-4aab-9f0f-74bc62ab58af`
+
+    ![Nó Webhook](images/nowebhook01.png)
+
+
+- **3° Passo**: Usei o `Postman` como ponto de entrada da pergunta do usuário
+
+    ![Postman](images/postman1.png)
+    ![Nó Webhook com a saída](images/nowebhook02.png)
+
+- **4° Passo**: Adicionei um nó `code` apenas para extrair o campo `pergunta` da requisição e passar para frente no formato `JSON`:
+
+    ![Nó Code](images/code2.png)
+
+- **5° Passo**: Adicionei um nó `Basic LLM Chain1` (junto a OpenAI Chat Model), com a função de receber a pergunta e transformar em instruções estruturadas no formato `JSON`. Ou seja, ele entende qual `endpoint da API` chamar, quais filtros aplicar e qual campo buscar.
+      
+      
+        {
+          "endpoint": "/eventos",
+          "filtros": { "nome_evento": "Facilit.IA" },
+          "campo_desejado": "data_anual"
+        }
+      
+
+    ![Nó Code](images/llm1.png)
+
+    
+
+    ![Nó Code](images/credenciais-openai.png)
+
+    (para adicionar na credencial do n8n, criei algumas chaves de testes, além da que foi disponibilizada no desafio)
+
+
+- **6° Passo**: Criei um nó `request` para montar a URL dinamicamente usando as variáveis JSON do LLM: `http://api_container:8000/eventos?nome_evento=Facilit.IA`
+
+    ![Nó Code](images/request02.png)
+
+- **7° Passo**: Adicionei um novo nó `Basic LLM Chain2` (com outra OpenAI Chat Model) para receber a pergunta original e os dados crus da API. A ideia é usar o LLM como "pós-processador", gerando um JSON de resposta mais natural e direto.
+
+  ![Nó Code](images/llm2.png)
+
+- **8° Passo**: Criei um novo `code` para implementar uma lógica extra de validação, onde ele lê o JSON retornado da API. A ideia é verificar os campos desejados e o nome do evento que o LLM extraiu. Com isso, vai procurar o evento na lista da API e retornar apenas o valor específico ou "Evento não encontrado".
+   
+   Exemplo:
+    ```powershell
+    {
+      "evento": "Facilit.IA",
+      "campo": "data_anual",
+      "resposta": "01/05/2025 à 31/07/2025"
+    }
+    ```
+- **9° Passo**: O último nó adicionado foi o `Respond to Webhook`, retornando o JSON final ao cliente que chamou o webhook.
+    
+    Exemplo de resposta:
+    ```powershell
+    {
+      "evento": "Facilit.IA",
+      "campo": "data_anual",
+      "resposta": "01/05/2025 à 31/07/2025"
+    }
+    ```
+### Arquitetura do fluxo criado para a terceira etapa do desafio:
+  ![Arquitetura do fluxo etapa 3](images/Arquitetura-do-fluxo-etapa-3.png)
+
