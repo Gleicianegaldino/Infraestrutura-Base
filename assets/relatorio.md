@@ -146,3 +146,54 @@ e58460cd6514   n8nio/n8n                 "tini -- /docker-ent…"   2 days ago  
   Acessando pelo link `http://localhost:8000` deve aparecer `{"status": "API está funcionando!"}` e pelo `http://localhost:8000/docs` aparece a documentação automática do FastAPI.
     ![Arquitetura do fluxo etapa 3](images/documentação-automática-FastAPI.png)
 
+## Etapa 2: Workflow de Migração de Dados (ETL com n8n)
+- **1° Passo**: Atualizei o arquivo `docker-compose.yml` adicionando o `n8n`, que agora inclui os três serviços (PostgreSQL, API e n8n), permitindo que eles se comuniquem. Após a execução do arquivo `docker-compose.yml` com comando `docker-compose up -d --build`, acessei o endereço `http://localhost:5678` com login e senha que criei, começando a usar o `workflow` para a migração de dados.
+
+- **2° Passo**: Estabeleci um fluxo de trabalho no n8n e o processo começou de forma manual, executando o fluxo. Criei uma conta no `Google Sheets` e conectei ao n8n. Autorizei o acesso com minhas `credenciais` seguindo o passo a passo que o próprio n8n mostrou. A próxima etapa foi configurar a leitura de três planilhas distintas usando nós `Google Sheets`. Cada planilha contém informações que precisei unificar em uma  única estrutura. Para garantir a consistência dos dados, criei etapas intermediárias de edição de campos, onde padronizei colunas, ajustei formatos (como datas e textos) e corrigi divergências entre as diferentes fontes.
+
+  Ou seja:
+    - Criei um fluxo de trabalho que começa manualmente, quando executo o fluxo;
+    - Configurei uma conta no `Google Sheets` e conectei ao `n8n`;
+    - Autorizei o acesso com minhas `credenciais`, seguindo o passo a passo do próprio `n8n`;
+    - Configurei a leitura de `três planilhas` distintas usando nós do `Google Sheets`;
+    - Cada planilha continha informações que eu precisava unificar em uma `estrutura única`;
+    - Para garantir a consistência dos dados, criei etapas intermediárias de edição de campos, onde:
+      - Padronizei colunas; 
+      - Ajustei formatos (como datas e textos);
+      - Corrigi divergências entre as diferentes fontes.
+
+  ![Credencial Google Sheets](images/credencial-gloogle-sheets.png)
+  ![Nó Edit Fields 1](images/edit1.png)
+  ![Nó Edit Fields 2](images/edit2.png)
+  ![Nó Edit Fields 3](images/edit3.png)
+
+
+- **3° Passo**: Após esse ajuste, implementei um nó de `mesclagem` para consolidar os registros em um único conjunto de dados. Dessa forma, os itens provenientes das `três planilhas` foram reunidos em uma coleção final, eliminando redundâncias e preparando tudo para a carga no banco. 
+
+  ![Nó Merge](images/merge.png)
+
+
+- **4° Passo**: Para refinar ainda mais as informações, adicionei uma etapa de `edição de campos`, seguida por um nó `code` customizado, que foi utilizado para aplicar regras adicionais, como a geração de identificadores e a validação de valores obrigatórios. 
+
+  ![Nó Edit Fields 4](images/edit4.png)
+  ![Nó Code](images/code1.png)
+
+
+- **5° Passo**: Com os dados devidamente tratados, configurei a etapa de inserção em uma tabela do `PostgreSQL`. Criei a credencial do Postgres no n8n, conectando o banco chamado `meubanco`. Para isso, informei o `host do serviço`, o `usuário` e a `senha` configurados no `docker-compose.yml`. Após isso, testei a conexão e validei que estava funcionando. Nessa fase, os registros já entram padronizados e estruturados conforme o modelo que defini anteriormente no banco. 
+
+  ![Credencial do Postgres](images/credencial-postgres.png)
+  ![Nó Postgres](images/postgres1.png)
+
+- **6° Passo**: Por fim, adicionei uma chamada `HTTP` do tipo `POST` para a `API` que construí em `FastAPI`. Essa etapa permite que os dados inseridos no banco também sejam transmitidos para a API, servindo tanto para validação como para a integração com outras camadas da solução.
+
+  ![Nó Edit Fields 3](images/request1.png)
+
+
+  e quando acessei endereço `http://localhost:8000/eventos/` mostrou os dados salvos no banco de dados.
+
+  ![Nó Edit Fields 3](images/localhost-n8n-eventos-inseridos.png)
+
+  
+### Arquitetura do fluxo criado para a segunda etapa do desafio:
+  ![Arquitetura do fluxo etapa 2](images/Arquitetura-do-fluxo-etapa-2.png)
+
