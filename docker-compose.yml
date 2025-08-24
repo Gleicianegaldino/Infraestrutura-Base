@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: admingle
+      POSTGRES_PASSWORD: novasenha123
+      POSTGRES_DB: meubanco
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+  
+  api:
+    build: .
+    container_name: api_container
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: postgres_container
+      POSTGRES_DB: meubanco
+      POSTGRES_USER: admingle
+      POSTGRES_PASSWORD: novasenha123
+    depends_on:
+      - postgres
+
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n_container
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admingle
+      - N8N_BASIC_AUTH_PASSWORD=admingle123
+      - N8N_HOST=${SUBDOMAIN}.localhost.run
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - ~/.n8n:/home/node/.n8n
+    depends_on:
+      - postgres
+      - api
