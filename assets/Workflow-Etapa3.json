@@ -1,0 +1,264 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        1728
+      ],
+      "id": "54ce3821-f4fd-4ee6-b2ef-279f286a4d76",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "4v4o0Dw6kC41xF3o",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extraia da pergunta o endpoint, filtros e campo desejado.\nResponda somente neste formato JSON:\n\n{\n  \"endpoint\": \"/eventos\",\n  \"filtros\": {\n    \"nome_evento\": \"Facilit.IA\"\n  },\n  \"campo_desejado\": \"data_anual\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        560,
+        1536
+      ],
+      "id": "e63d6c32-b576-4f68-8615-cea4b0607d49",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "consulta-ia",
+        "responseMode": "streaming",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        1536
+      ],
+      "id": "1cb5c69f-139f-4a48-99c6-df27f22d478d",
+      "name": "Webhook3",
+      "webhookId": "487582fb-f009-4525-9ab1-411ddea8211a"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1504,
+        1536
+      ],
+      "id": "c55c6573-35df-483d-aaa5-22de0d23d3d5",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\n\nreturn [\n  {\n    json: {\n      pergunta: data.pergunta\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        1536
+      ],
+      "id": "60883fe1-4398-44f7-8874-d5d6f82fcc94",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "url": "=http://api_container:8000{{$json[\"endpoint\"]}}?nome_evento={{$json[\"filtros\"][\"nome_evento\"]}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "nome_evento",
+              "value": "{{$json[\"filtros\"][\"nome_evento\"]}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        864,
+        1536
+      ],
+      "id": "a421efe0-86fd-4315-b9c0-eaa61b88f51a",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Você é um assistente que responde perguntas sobre eventos.\n\nEntrada:\nPergunta do usuário: {{$json.pergunta}}\nDados retornados da API: {{$json}}\n\nSaída: um JSON no formato:\n{\n  \"resposta\": \"<texto simples com a resposta ao usuário>\"\n}\n\nApenas retorne o JSON, sem explicações extras.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1040,
+        1536
+      ],
+      "id": "11aa87cb-b5c5-445a-ad9b-6ff1a5bba35b",
+      "name": "Basic LLM Chain2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        1728
+      ],
+      "id": "e3758756-01c5-4cef-bedb-42eda03e39d5",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "4v4o0Dw6kC41xF3o",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const respostaApi = $json;\nconst campo = $prevNode[\"Basic LLM Chain1\"].json[\"campo_desejado\"];\nconst nomeEvento = $prevNode[\"Basic LLM Chain1\"].json[\"filtros\"]?.nome_evento;\n\nconst lista = respostaApi.eventos || [];\n\nlet encontrado = lista.find(ev => \n  ev.nome_evento?.toLowerCase() === nomeEvento?.toLowerCase()\n);\n\nreturn [\n  {\n    json: {\n      evento: nomeEvento,\n      campo: campo,\n      resposta: encontrado ? (encontrado[campo] || \"Não encontrado\") : \"Evento não encontrado\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        1536
+      ],
+      "id": "af1bcc87-cdee-4665-b07e-94abc4879bf4",
+      "name": "Code3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9b77d452-0b23-488f-aadc-b61dc8f4f185",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fb1a7431924de21853473589f1ac3324ff7742a3ae0f5c3b0652170d7269e4ba"
+  },
+  "id": "y3eSstZi6N6ZrIrq",
+  "tags": []
+}
