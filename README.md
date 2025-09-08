@@ -65,7 +65,7 @@ Este projeto é uma **Prova de Conceito (PoC)** de um sistema de Business Intell
 #### Relatório Técnico:
 Em **assets** também encontra-se o [relatório técnico detalhado](assets/relatorio.md), descrevendo todo o processo de desenvolvimento.
 
-[Relatório técnico em PDF](assets/Relatório-Gleiciane-Galdino.pdf)
+
 
 ### Desafios pessoais:
 - Primeiro contato com n8n e OpenAI;
